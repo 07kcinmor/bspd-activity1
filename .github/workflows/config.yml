@@ -1,0 +1,41 @@
+name: flask workflow
+
+on:
+    push:
+        branches:
+            main
+    pull_request:
+        branches:
+            main
+    workflow_dispatch:
+
+jobs:
+    build:
+        runs-on: nginx:stable
+
+        steps:
+        - name: checkout repo
+          uses: actions/checkout@v4
+
+        - name: install dependencies
+          run: |
+            pip install flask
+            pip install pytest
+
+        - name: run test
+          run: |
+            pytest
+
+        - name: docker login 
+          uses: docker/login-action@v2
+          with:
+            username: ${{ secrets.DOCKER_USERNAME }}
+            password: ${{ secrets.DOCKER_PASSWORD }}
+
+        - name: build docker image
+          run: |
+            docker build -t kcinmor/indexphp-app:latest
+
+        - name: push to docker hub
+          run: |
+            docker push  kcinmor/indexphp-app:latest
